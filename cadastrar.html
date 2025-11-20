@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulova - Cadastrar Produto</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat+Alternates:wght@300;400;500;600&family=Montserrat:wght@300;400;500;600&display=swap');
+        body { font-family: 'Montserrat', sans-serif; }
+        .font-alternates { font-family: 'Montserrat Alternates', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #fb923c; border-radius: 10px; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-gray-50">
+
+    <!-- MENU ATUALIZADO -->
+    <nav class="bg-white w-full py-6 px-8 md:px-16 flex justify-between items-center shadow-sm z-50 sticky top-0">
+        <div class="flex items-center gap-8 md:gap-16">
+            <a href="index.html" class="text-xl text-gray-800 font-normal tracking-wide font-alternates hover:text-orange-500 transition-colors">Bulova</a>
+            <div class="hidden md:flex gap-8">
+                <a href="produtos.html" class="text-sm text-gray-800 uppercase tracking-widest hover:text-orange-500 transition-colors">Produtos</a>
+                <a href="listar.html" class="text-sm text-gray-800 uppercase tracking-widest hover:text-orange-500 transition-colors">Listar</a>
+            </div>
+        </div>
+        <div>
+            <a href="cadastrar.html" class="text-sm text-orange-500 font-bold uppercase tracking-widest transition-colors border-b-2 border-orange-500 pb-1">Cadastrar</a>
+        </div>
+    </nav>
+
+    <main class="flex-1 bg-gradient-to-r from-pink-200 via-orange-300 to-orange-400 w-full p-8 md:p-16 flex items-center justify-center">
+        <div class="bg-white w-full max-w-3xl rounded-[2.5rem] shadow-2xl overflow-hidden relative">
+            
+            <div class="bg-gray-50 px-8 py-6 border-b border-gray-100 flex justify-between items-center">
+                <h1 class="text-2xl text-gray-800 font-alternates font-normal">Novo Relógio</h1>
+                <div class="text-4xl text-orange-400 opacity-50">⌚</div>
+            </div>
+
+            <form id="productForm" class="p-8 md:p-12 space-y-8">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="group">
+                        <label for="name" class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Nome do Modelo</label>
+                        <input type="text" id="name" name="nome" required placeholder="Ex: Marine Star 2024" 
+                               class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-700 focus:outline-none focus:border-orange-400 focus:bg-white transition-all">
+                    </div>
+
+                    <!-- Dropdown de Marcas -->
+                    <div class="group relative z-20">
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Coleção / Marca</label>
+                        <input type="hidden" id="brand-input" name="marca_id" required>
+                        
+                        <div id="dropdown-trigger" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-700 cursor-pointer flex justify-between items-center hover:bg-white relative">
+                            <span id="dropdown-text" class="text-gray-400 select-none">Carregando marcas...</span>
+                            <div id="dropdown-arrow" class="transition-transform duration-300 text-gray-400">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
+                        </div>
+
+                        <div id="dropdown-menu" class="absolute top-full left-0 w-full mt-2 bg-white border border-gray-100 rounded-2xl shadow-xl opacity-0 invisible transform -translate-y-2 transition-all duration-300 overflow-hidden z-50">
+                            <div id="dropdown-options" class="max-h-60 overflow-y-auto custom-scrollbar p-1"></div>
+                            <div id="btn-add-brand" class="p-3 border-t border-gray-100 bg-gray-50 hover:bg-orange-50 cursor-pointer flex items-center gap-2 text-orange-500 text-sm font-bold transition-colors">
+                                <span class="text-lg">+</span> Criar Nova Marca
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CAMPO DE UPLOAD DE IMAGEM -->
+                <div class="group">
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Foto do Produto</label>
+                    
+                    <div class="relative w-full border-2 border-dashed border-gray-300 rounded-2xl hover:border-orange-400 transition-colors bg-gray-50 hover:bg-white group-hover:bg-white">
+                        <input type="file" id="image_file" name="imagem" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="previewImage(this)">
+                        
+                        <div class="flex flex-col items-center justify-center py-8 text-center transition-opacity duration-300" id="upload-placeholder">
+                            <div class="text-4xl mb-2 text-gray-300">📷</div>
+                            <p class="text-sm text-gray-500 font-medium">Clique para fazer upload</p>
+                            <p class="text-xs text-gray-400">JPG, PNG ou WebP</p>
+                        </div>
+
+                        <!-- Preview da Imagem (Escondido inicialmente) -->
+                        <div id="image-preview-container" class="hidden absolute inset-0 w-full h-full bg-white rounded-2xl overflow-hidden flex items-center justify-center">
+                            <img id="image-preview" src="" alt="Preview" class="max-h-full max-w-full object-contain">
+                            <button type="button" onclick="removeImage(event)" class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 shadow-md hover:bg-red-600 z-20">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="group">
+                    <label for="description" class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Descrição</label>
+                    <textarea id="description" name="descricao" rows="3" placeholder="Detalhes técnicos..." 
+                              class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-700 focus:outline-none focus:border-orange-400 transition-all resize-none"></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="group relative">
+                        <label for="price" class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Preço (R$)</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-3.5 text-gray-400">R$</span>
+                            <input type="number" id="price" name="preco" step="0.01" required placeholder="0,00" 
+                                   class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-gray-700 focus:outline-none focus:border-orange-400 transition-all">
+                        </div>
+                    </div>
+                    <div class="group">
+                        <label for="material" class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Material</label>
+                        <input type="text" id="material" name="material" placeholder="Aço Inoxidável" 
+                               class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-700 focus:outline-none focus:border-orange-400 transition-all">
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-4 pt-4">
+                    <button type="button" class="px-6 py-3 text-gray-500 text-sm uppercase tracking-widest hover:text-gray-800">Cancelar</button>
+                    <button type="submit" id="submit-btn" class="px-10 py-3 bg-orange-400 text-white rounded-full shadow-lg hover:bg-orange-500 transition-all uppercase tracking-widest text-sm font-semibold">
+                        Cadastrar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- MODAL PARA NOVA MARCA -->
+    <div id="brand-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center opacity-0 transition-opacity duration-300">
+        <div class="bg-white w-full max-w-md rounded-3xl p-8 shadow-2xl transform scale-95 transition-transform duration-300" id="brand-modal-content">
+            <h2 class="text-xl font-alternates text-gray-800 mb-6">Nova Marca / Coleção</h2>
+            <form id="brandForm" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Nome da Marca</label>
+                    <input type="text" id="new-brand-name" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-700 focus:outline-none focus:border-orange-400">
+                </div>
+                
+                <!-- Upload no Modal também -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Imagem da Coleção</label>
+                    <input type="file" id="new-brand-img" accept="image/*" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-700 text-sm focus:outline-none focus:border-orange-400">
+                </div>
+                
+                <div class="flex justify-end gap-3 pt-4">
+                    <button type="button" id="close-modal" class="px-4 py-2 text-gray-500 hover:text-gray-800 text-sm font-bold">Cancelar</button>
+                    <button type="submit" class="px-6 py-2 bg-orange-400 text-white rounded-full text-sm font-bold hover:bg-orange-500 transition-colors">Salvar Marca</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer class="bg-gray-900 text-white py-12 px-8 text-center border-t border-gray-800">
+        <div class="text-2xl font-alternates mb-6">Bulova</div>
+        <p class="text-gray-600 text-xs">&copy; 2024 Bulova.</p>
+    </footer>
+
+    <script>
+        const API_URL = 'http://localhost:3000';
+        
+        // Funções de Preview de Imagem
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('image-preview').src = e.target.result;
+                    document.getElementById('image-preview-container').classList.remove('hidden');
+                    document.getElementById('upload-placeholder').classList.add('opacity-0');
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function removeImage(e) {
+            e.preventDefault();
+            e.stopPropagation(); // Evita abrir o seletor de arquivos novamente
+            const input = document.getElementById('image_file');
+            input.value = ''; // Limpa o input
+            document.getElementById('image-preview').src = '';
+            document.getElementById('image-preview-container').classList.add('hidden');
+            document.getElementById('upload-placeholder').classList.remove('opacity-0');
+        }
+
+        // --- LÓGICA DO DROPDOWN E MODAL (Mantida e Ajustada) ---
+        const dropdownText = document.getElementById('dropdown-text');
+        const dropdownOptions = document.getElementById('dropdown-options');
+        const brandInput = document.getElementById('brand-input');
+        const trigger = document.getElementById('dropdown-trigger');
+        const menu = document.getElementById('dropdown-menu');
+        const arrow = document.getElementById('dropdown-arrow');
+        
+        const btnAddBrand = document.getElementById('btn-add-brand');
+        const modal = document.getElementById('brand-modal');
+        const modalContent = document.getElementById('brand-modal-content');
+        const closeModalButton = document.getElementById('close-modal');
+        const brandForm = document.getElementById('brandForm');
+        
+        let isDropdownOpen = false;
+
+        async function fetchBrands(selectBrandId = null) {
+            try {
+                const response = await fetch(`${API_URL}/marcas`);
+                const marcas = await response.json();
+                dropdownOptions.innerHTML = '';
+                
+                if(marcas.length === 0) {
+                    dropdownText.textContent = "Nenhuma marca encontrada";
+                } else if (!brandInput.value) {
+                    dropdownText.textContent = "Selecione uma coleção...";
+                }
+
+                marcas.forEach(marca => {
+                    const div = document.createElement('div');
+                    div.className = "option-item flex items-center gap-3 px-4 py-3 hover:bg-orange-50 rounded-xl cursor-pointer transition-colors text-gray-600 hover:text-orange-600";
+                    const colors = ['bg-green-400', 'bg-blue-400', 'bg-purple-400', 'bg-yellow-400', 'bg-red-400'];
+                    const randomColor = colors[marca.id % colors.length];
+                    div.innerHTML = `<span class="w-2 h-2 rounded-full ${randomColor}"></span> ${marca.nome}`;
+                    
+                    if (selectBrandId && marca.id === selectBrandId) selectBrand(marca.id, marca.nome, randomColor);
+                    div.addEventListener('click', () => selectBrand(marca.id, marca.nome, randomColor));
+                    dropdownOptions.appendChild(div);
+                });
+            } catch (error) { console.error(error); }
+        }
+
+        function selectBrand(id, name, colorClass) {
+            brandInput.value = id;
+            dropdownText.innerHTML = `<div class="flex items-center gap-2 text-gray-800 font-medium"><span class="w-2 h-2 rounded-full ${colorClass}"></span> ${name}</div>`;
+            toggleDropdown(false);
+        }
+
+        function toggleDropdown(forceState = null) {
+            isDropdownOpen = forceState !== null ? forceState : !isDropdownOpen;
+            if (isDropdownOpen) {
+                menu.classList.remove('invisible', 'opacity-0', '-translate-y-2');
+                arrow.classList.add('rotate-180');
+                trigger.classList.add('ring-4', 'ring-orange-100', 'border-orange-400');
+            } else {
+                menu.classList.add('invisible', 'opacity-0', '-translate-y-2');
+                arrow.classList.remove('rotate-180');
+                trigger.classList.remove('ring-4', 'ring-orange-100', 'border-orange-400');
+            }
+        }
+
+        function openModal() {
+            toggleDropdown(false);
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
+            }, 10);
+        }
+
+        function hideModal() {
+            modal.classList.add('opacity-0');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+        }
+
+        trigger.addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown(); });
+        btnAddBrand.addEventListener('click', (e) => { e.stopPropagation(); openModal(); });
+        closeModalButton.addEventListener('click', hideModal);
+        document.addEventListener('click', (e) => { 
+            if(isDropdownOpen && !trigger.contains(e.target) && !menu.contains(e.target)) toggleDropdown(false); 
+        });
+
+        // --- SUBMISSÃO DO FORMULÁRIO DE MARCA (COM UPLOAD) ---
+        brandForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('nome', document.getElementById('new-brand-name').value);
+            const fileInput = document.getElementById('new-brand-img');
+            if (fileInput.files[0]) {
+                formData.append('imagem', fileInput.files[0]);
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/marcas`, {
+                    method: 'POST',
+                    body: formData 
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    await fetchBrands(data.id);
+                    hideModal();
+                    brandForm.reset();
+                } else {
+                    alert("Erro ao salvar marca.");
+                }
+            } catch (err) { console.error(err); alert("Erro de conexão."); }
+        });
+
+        // --- SUBMISSÃO DO FORMULÁRIO DE PRODUTO (COM UPLOAD) ---
+        document.getElementById('productForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const marca_id = document.getElementById('brand-input').value;
+            
+            if(!marca_id) { alert("Por favor, selecione uma marca."); return; }
+
+            // Criação do FormData
+            const formData = new FormData();
+            formData.append('nome', document.getElementById('name').value);
+            formData.append('preco', document.getElementById('price').value);
+            formData.append('marca_id', marca_id);
+            formData.append('descricao', document.getElementById('description').value);
+            formData.append('material', document.getElementById('material').value);
+
+            // Arquivo
+            const fileInput = document.getElementById('image_file');
+            if (fileInput.files[0]) {
+                formData.append('imagem', fileInput.files[0]);
+            }
+
+            const btn = document.getElementById('submit-btn');
+            try {
+                btn.textContent = "Enviando...";
+                btn.disabled = true;
+
+                const response = await fetch(`${API_URL}/produtos`, {
+                    method: 'POST',
+                    body: formData 
+                });
+
+                if (response.ok) {
+                    alert("Produto cadastrado com sucesso!");
+                    window.location.href = "produtos.html";
+                } else {
+                    alert("Erro ao cadastrar.");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Erro de conexão.");
+            } finally {
+                btn.textContent = "Cadastrar";
+                btn.disabled = false;
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => fetchBrands());
+    </script>
+</body>
+</html>

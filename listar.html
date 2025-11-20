@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulova - Listar e Editar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat+Alternates:wght@300;400;500;600&family=Montserrat:wght@300;400;500;600&display=swap');
+        body { font-family: 'Montserrat', sans-serif; }
+        .font-alternates { font-family: 'Montserrat Alternates', sans-serif; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-gray-50">
+
+    <!-- NAVBAR ATUALIZADA -->
+    <nav class="bg-white w-full py-6 px-8 md:px-16 flex justify-between items-center shadow-sm z-50 sticky top-0">
+        <div class="flex items-center gap-8 md:gap-16">
+            <a href="index.html" class="text-xl text-gray-800 font-normal tracking-wide font-alternates hover:text-orange-500 transition-colors">Bulova</a>
+            <div class="hidden md:flex gap-8">
+                <a href="produtos.html" class="text-sm text-gray-800 uppercase tracking-widest hover:text-orange-500 transition-colors">Produtos</a>
+                <!-- Menu Ativo -->
+                <a href="listar.html" class="text-sm text-orange-500 font-bold uppercase tracking-widest transition-colors border-b-2 border-orange-500 pb-1">Listar</a>
+            </div>
+        </div>
+        <div>
+            <a href="cadastrar.html" class="text-sm text-gray-800 uppercase tracking-widest hover:text-orange-500 transition-colors">Cadastrar</a>
+        </div>
+    </nav>
+
+    <main class="flex-1 bg-gray-50 w-full p-8 md:p-16">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex justify-between items-end mb-8">
+                <div>
+                    <h1 class="text-3xl text-gray-800 font-alternates font-medium">Gerenciar Coleção</h1>
+                    <p class="text-gray-500 text-sm mt-2">Visualize e edite os relógios cadastrados.</p>
+                </div>
+                <a href="cadastrar.html" class="bg-orange-400 text-white px-6 py-2 rounded-full text-sm font-bold uppercase tracking-wide hover:bg-orange-500 transition-colors shadow-md">
+                    + Novo
+                </a>
+            </div>
+
+            <!-- Tabela de Listagem -->
+            <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-widest">
+                                <th class="p-6 font-bold">Produto</th>
+                                <th class="p-6 font-bold">Marca</th>
+                                <th class="p-6 font-bold">Preço</th>
+                                <th class="p-6 font-bold text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body" class="text-sm text-gray-700">
+                            <!-- Linhas serão inseridas via JS -->
+                            <tr>
+                                <td colspan="4" class="p-8 text-center text-gray-400">Carregando...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL DE EDIÇÃO -->
+    <div id="edit-modal" class="fixed inset-0 z-[70] hidden opacity-0 transition-opacity duration-300">
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" onclick="closeEditModal()"></div>
+        
+        <div class="fixed inset-0 flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-2xl rounded-[2rem] shadow-2xl transform scale-95 transition-all duration-300 max-h-[90vh] overflow-y-auto custom-scrollbar" id="edit-modal-content">
+                
+                <div class="p-8 border-b border-gray-100 flex justify-between items-center">
+                    <h2 class="text-xl font-alternates text-gray-800">Editar Relógio</h2>
+                    <button onclick="closeEditModal()" class="text-gray-400 hover:text-red-500">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+
+                <form id="editForm" class="p-8 space-y-6">
+                    <input type="hidden" id="edit-id" name="id">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Nome</label>
+                            <input type="text" id="edit-name" name="nome" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:border-orange-400 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Preço</label>
+                            <input type="number" id="edit-price" name="preco" step="0.01" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:border-orange-400 outline-none">
+                        </div>
+                    </div>
+
+                    <!-- Select simples para Marcas no Modal de Edição -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Marca</label>
+                        <select id="edit-brand" name="marca_id" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:border-orange-400 outline-none">
+                            <option value="">Carregando...</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Descrição</label>
+                        <textarea id="edit-desc" name="descricao" rows="3" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:border-orange-400 outline-none resize-none"></textarea>
+                    </div>
+
+                    <div>
+                         <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Alterar Imagem (Opcional)</label>
+                         <input type="file" id="edit-file" name="imagem" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100">
+                    </div>
+
+                    <div class="pt-4 flex justify-end gap-3">
+                        <button type="button" onclick="closeEditModal()" class="px-6 py-3 text-gray-500 text-sm font-bold hover:bg-gray-100 rounded-full">Cancelar</button>
+                        <button type="submit" class="px-8 py-3 bg-orange-400 text-white rounded-full shadow-lg hover:bg-orange-500 text-sm font-bold uppercase tracking-wide">Salvar Alterações</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000';
+        let allBrands = [];
+
+        // 1. Carregar Marcas (para o select de edição)
+        async function fetchBrands() {
+            try {
+                const res = await fetch(`${API_URL}/marcas`);
+                allBrands = await res.json();
+                const select = document.getElementById('edit-brand');
+                select.innerHTML = '<option value="">Selecione uma marca</option>';
+                allBrands.forEach(b => {
+                    select.innerHTML += `<option value="${b.id}">${b.nome}</option>`;
+                });
+            } catch (e) { console.error(e); }
+        }
+
+        // 2. Carregar Lista de Produtos
+        async function loadTable() {
+            const tbody = document.getElementById('table-body');
+            try {
+                const res = await fetch(`${API_URL}/produtos`);
+                const products = await res.json();
+                
+                tbody.innerHTML = '';
+                
+                if(products.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-gray-500">Nenhum relógio cadastrado.</td></tr>`;
+                    return;
+                }
+
+                products.forEach(p => {
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b border-gray-50 hover:bg-gray-50 transition-colors group";
+                    
+                    const img = p.imagem_url || 'https://via.placeholder.com/100';
+                    const price = parseFloat(p.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                    const brand = p.nome_marca || '-';
+
+                    tr.innerHTML = `
+                        <td class="p-4">
+                            <div class="flex items-center gap-4">
+                                <img src="${img}" class="w-16 h-16 object-contain rounded-lg bg-white border border-gray-100 p-1" alt="${p.nome}">
+                                <span class="font-medium text-gray-800 text-base">${p.nome}</span>
+                            </div>
+                        </td>
+                        <td class="p-4 text-gray-600 font-medium">${brand}</td>
+                        <td class="p-4 text-gray-600 font-light">${price}</td>
+                        <td class="p-4 text-center">
+                            <button onclick='openEditModal(${JSON.stringify(p)})' class="bg-blue-50 text-blue-500 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-blue-100 transition-colors mr-2">
+                                Editar
+                            </button>
+                            <button onclick='deleteProduct(${p.id})' class="text-red-300 hover:text-red-500 transition-colors p-2" title="Excluir">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+            } catch (e) {
+                console.error(e);
+                tbody.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-red-400">Erro ao carregar lista.</td></tr>`;
+            }
+        }
+
+        // 3. Lógica do Modal de Edição
+        const modal = document.getElementById('edit-modal');
+        const modalContent = document.getElementById('edit-modal-content');
+
+        function openEditModal(product) {
+            // Preenche o formulário
+            document.getElementById('edit-id').value = product.id;
+            document.getElementById('edit-name').value = product.nome;
+            document.getElementById('edit-price').value = product.preco;
+            document.getElementById('edit-brand').value = product.marca_id;
+            document.getElementById('edit-desc').value = product.descricao || '';
+            document.getElementById('edit-file').value = ''; // Limpa arquivo anterior
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeEditModal() {
+            modal.classList.add('opacity-0');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+        }
+
+        // 4. Salvar Edição
+        document.getElementById('editForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('edit-id').value;
+            const formData = new FormData(e.target); // Pega todos os campos, incluindo arquivo
+
+            try {
+                const res = await fetch(`${API_URL}/produtos/${id}`, {
+                    method: 'PUT',
+                    body: formData // Flask aceita multipart no PUT tbm
+                });
+
+                if(res.ok) {
+                    alert("Relógio atualizado!");
+                    closeEditModal();
+                    loadTable(); // Recarrega tabela
+                } else {
+                    alert("Erro ao atualizar.");
+                }
+            } catch(err) {
+                console.error(err);
+                alert("Erro de conexão.");
+            }
+        });
+
+        // 5. Deletar (Extra)
+        async function deleteProduct(id) {
+            if(!confirm("Tem certeza que deseja excluir este relógio?")) return;
+            try {
+                await fetch(`${API_URL}/produtos/${id}`, { method: 'DELETE' });
+                loadTable();
+            } catch(e) { alert("Erro ao deletar"); }
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchBrands();
+            loadTable();
+        });
+    </script>
+
+</body>
+</html>
